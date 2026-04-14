@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tack — Rebuild Proposal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root {
   --bg-primary: #ffffff;
@@ -491,6 +490,38 @@ h2 {
   page-break-inside: avoid;
 }
 
+/* Print → Save as PDF */
+@page {
+  size: A4;
+  margin: 14mm 12mm 16mm 12mm;
+}
+@media print {
+  html, body {
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  body {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f7f7f5;
+    --bg-tertiary: #f0efec;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #9a9a9a;
+    --border: rgba(0,0,0,0.1);
+    --border-hover: rgba(0,0,0,0.2);
+  }
+  .topbar { display: none !important; }
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  h2 { margin-top: 32px; }
+  .divider { margin: 32px 0; }
+  a { color: inherit; text-decoration: none; }
+}
+
 @media (max-width: 700px) {
   .grid-6 {
     grid-template-columns: 90px minmax(0,1fr) 65px minmax(0,1fr) minmax(0,.7fr) 65px;
@@ -929,47 +960,11 @@ h2 {
 <script>
 (function () {
   const btn = document.getElementById('downloadPdf');
-  const target = document.getElementById('proposal');
-
-  btn.addEventListener('click', async () => {
-    if (!window.html2pdf) {
-      alert('PDF library is still loading. Try again in a moment.');
-      return;
-    }
-    const originalLabel = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = 'Preparing PDF…';
-
-    // Force light theme during capture for print fidelity, then restore.
-    const addedLight = !document.body.classList.contains('force-light');
-    if (addedLight) document.body.classList.add('force-light');
-
-    const opt = {
-      margin:       [12, 12, 16, 12], // mm
-      filename:     'tack-rebuild-proposal.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: target.scrollWidth
-      },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.ms', '.fcard', '.scard', '.grid-6', '.phase-label', '.note-box'] }
-    };
-
-    try {
-      await html2pdf().set(opt).from(target).save();
-    } catch (err) {
-      console.error(err);
-      alert('Sorry, something went wrong generating the PDF.');
-    } finally {
-      if (addedLight) document.body.classList.remove('force-light');
-      btn.disabled = false;
-      btn.innerHTML = originalLabel;
-    }
+  btn.addEventListener('click', () => {
+    const originalTitle = document.title;
+    document.title = 'Tack Rebuild Proposal';
+    window.print();
+    setTimeout(() => { document.title = originalTitle; }, 500);
   });
 })();
 </script>
