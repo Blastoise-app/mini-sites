@@ -1,12 +1,969 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TAC</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tack — Rebuild Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f7f5;
+  --bg-tertiary: #f0efec;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --text-tertiary: #9a9a9a;
+  --border: rgba(0,0,0,0.1);
+  --border-hover: rgba(0,0,0,0.2);
+  --green-bg: #e6f5ec; --green-text: #0f6e56;
+  --amber-bg: #faeeda; --amber-text: #854f0b;
+  --red-bg: #fcebeb; --red-text: #a32d2d;
+  --blue-bg: #e6f1fb; --blue-text: #185fa5;
+  --purple-bg: #eeedfe; --purple-text: #534ab7;
+  --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+  --mono: 'DM Mono', monospace;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242422;
+    --bg-tertiary: #2c2c2a;
+    --text-primary: #e8e8e4;
+    --text-secondary: #9a9a96;
+    --text-tertiary: #6b6b68;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.15);
+    --green-bg: #0a2e1f; --green-text: #5dcaa5;
+    --amber-bg: #2a1d08; --amber-text: #fac775;
+    --red-bg: #2a1010; --red-text: #f09595;
+    --blue-bg: #0a1a2a; --blue-text: #85b7eb;
+    --purple-bg: #1a1830; --purple-text: #afa9ec;
+  }
+}
+
+/* When exporting to PDF, force light theme for print fidelity */
+body.force-light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f7f5;
+  --bg-tertiary: #f0efec;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --text-tertiary: #9a9a9a;
+  --border: rgba(0,0,0,0.1);
+  --border-hover: rgba(0,0,0,0.2);
+  --green-bg: #e6f5ec; --green-text: #0f6e56;
+  --amber-bg: #faeeda; --amber-text: #854f0b;
+  --red-bg: #fcebeb; --red-text: #a32d2d;
+  --blue-bg: #e6f1fb; --blue-text: #185fa5;
+  --purple-bg: #eeedfe; --purple-text: #534ab7;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Top bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 0.5px solid var(--border);
+}
+.topbar-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.brand img {
+  height: 32px;
+  width: auto;
+  display: block;
+  border-radius: 6px;
+}
+.brand-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.btn-pdf {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 0.5px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+  white-space: nowrap;
+}
+.btn-pdf:hover { background: var(--bg-tertiary); border-color: var(--border-hover); }
+.btn-pdf:active { transform: translateY(1px); }
+.btn-pdf svg { width: 14px; height: 14px; }
+.btn-pdf[disabled] { opacity: 0.6; cursor: wait; }
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 48px;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin-bottom: 20px;
+  margin-top: 56px;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.legend span { display: flex; align-items: center; gap: 5px; }
+.ldot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* Table grid */
+.table-wrap {
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.grid-6 {
+  display: grid;
+  grid-template-columns: 100px minmax(0,1fr) 75px minmax(0,1fr) minmax(0,.8fr) 75px;
+  gap: 0;
+}
+
+.grid-6 .hdr {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 8px 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: var(--bg-secondary);
+}
+
+.grid-6 .cell {
+  font-size: 12.5px;
+  padding: 10px 9px;
+  color: var(--text-primary);
+  line-height: 1.45;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.lbl {
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+
+.svc {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.alt {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.price {
+  font-weight: 500;
+  font-size: 12.5px;
+  font-family: var(--mono);
+}
+
+.dim {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.section-row {
+  padding: 8px 9px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg-tertiary);
+  grid-column: 1 / -1;
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  font-size: 9.5px;
+  padding: 1.5px 6px;
+  border-radius: 6px;
+  margin-top: 3px;
+  font-weight: 500;
+}
+.tag-keep { background: var(--green-bg); color: var(--green-text); }
+.tag-switch { background: var(--amber-bg); color: var(--amber-text); }
+.tag-drop { background: var(--red-bg); color: var(--red-text); }
+.tag-new { background: var(--blue-bg); color: var(--blue-text); }
+
+/* Footer cards */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.fcard {
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+}
+
+.fcard-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.fcard-total {
+  font-size: 17px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+.fcard-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 6px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.fcard-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.note-box {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+}
+
+.note-box strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Timeline */
+.ms {
+  position: relative;
+  padding: 0 0 0 30px;
+  margin-bottom: 24px;
+}
+.ms:last-child { margin-bottom: 0; }
+.ms::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 28px;
+  bottom: -24px;
+  width: 1px;
+  background: var(--border);
+}
+.ms:last-child::before { display: none; }
+
+.dot {
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 2px solid var(--border-hover);
+  background: var(--bg-primary);
+}
+.dot-pay { border-color: var(--green-text); background: var(--green-text); }
+.dot-launch { border-color: var(--blue-text); background: var(--blue-text); }
+.dot-design { border-color: var(--purple-text); background: var(--purple-text); }
+
+.ms-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ms-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.ms-title {
+  font-size: 15.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-top: 1px;
+}
+
+.ms-pay {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: var(--green-bg);
+  color: var(--green-text);
+  font-weight: 500;
+}
+
+.ms-body {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 6px;
+}
+
+.ms-deliver {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-top: 7px;
+  font-weight: 500;
+}
+
+.launch-tag {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: var(--blue-bg);
+  color: var(--blue-text);
+  font-weight: 500;
+}
+
+.inc-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.phase-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.phase-cost {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-primary);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.phase-gap { margin-top: 32px; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.scard {
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+}
+
+.scard-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+}
+
+.scard-val {
+  font-size: 20px;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+.scard-sub {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 56px 0;
+}
+
+/* Avoid awkward page breaks when exporting to PDF */
+.ms, .fcard, .scard, .grid-6, .phase-label, .note-box {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+@media (max-width: 700px) {
+  .grid-6 {
+    grid-template-columns: 80px minmax(0,1fr) 60px minmax(0,1fr) minmax(0,.7fr) 60px;
+  }
+  .grid-6 .cell, .grid-6 .hdr { padding: 8px 6px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: 1fr; }
+  h1 { font-size: 26px; }
+  .container { padding: 32px 16px 60px; }
+  .topbar-inner { padding: 10px 16px; }
+  .brand-title { font-size: 13px; }
+  .brand img { height: 28px; }
+}
+</style>
 </head>
 <body>
-  <h1>TAC</h1>
-  <p>Placeholder — content coming soon.</p>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <img src="./logo.png" alt="Tack logo" />
+      <span class="brand-title">Tack — Rebuild Proposal</span>
+    </div>
+    <button type="button" class="btn-pdf" id="downloadPdf" aria-label="Download PDF">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Download PDF
+    </button>
+  </div>
+</header>
+
+<div class="container" id="proposal">
+
+<h1>Tack — Rebuild Proposal</h1>
+<p class="subtitle">Modern tech stack, lower costs, full analytics, and a codebase that doesn't need a dev shop to maintain.</p>
+
+<!-- ==================== TECH STACK ==================== -->
+
+<h2>Tech stack comparison</h2>
+
+<div class="legend">
+  <span><span class="ldot" style="background:var(--green-text)"></span>Keep</span>
+  <span><span class="ldot" style="background:var(--amber-text)"></span>Switch</span>
+  <span><span class="ldot" style="background:var(--red-text)"></span>Drop</span>
+  <span><span class="ldot" style="background:var(--blue-text)"></span>New</span>
+</div>
+
+<div class="table-wrap">
+
+  <div class="grid-6">
+    <div class="hdr">Layer</div>
+    <div class="hdr">Current</div>
+    <div class="hdr">Current $/mo</div>
+    <div class="hdr">Recommended</div>
+    <div class="hdr">Alternatives</div>
+    <div class="hdr">New $/mo</div>
+  </div>
+
+  <!-- Hosting -->
+  <div class="section-row">Hosting + compute</div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Server / hosting</div>
+    <div class="cell"><span class="svc">VPS (DigitalOcean / EC2)</span><br>Manages PHP, MySQL, Node, deploys</div>
+    <div class="cell price">$50–100</div>
+    <div class="cell"><span class="svc">Vercel</span><br>Push to deploy, auto-scaling, zero server management<br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">Netlify, Cloudflare Pages, Railway</div>
+    <div class="cell price">$20</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Server admin</div>
+    <div class="cell"><span class="svc">Manual or contractor</span><br>Patches, SSL, uptime, scaling</div>
+    <div class="cell price">$200–500<br><span class="dim">or your time</span></div>
+    <div class="cell"><span class="svc">Not needed</span><br>Fully managed by hosting platform<br><span class="tag tag-drop">drop</span></div>
+    <div class="cell alt">—</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <!-- Frontend + Backend -->
+  <div class="section-row">Frontend + backend</div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Framework</div>
+    <div class="cell"><span class="svc">Laravel 11 + Vue 3</span><br>PHP + JS across 2 repos</div>
+    <div class="cell price"><span class="dim">—</span></div>
+    <div class="cell"><span class="svc">Next.js 15 + TypeScript</span><br>One language, one repo, one deploy<br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">Nuxt (Vue), Remix, SvelteKit</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">UI library</div>
+    <div class="cell"><span class="svc">Vuetify 3</span></div>
+    <div class="cell price"><span class="dim">—</span></div>
+    <div class="cell"><span class="svc">Tailwind + shadcn/ui</span><br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">Chakra UI, Mantine, Radix</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <!-- Database -->
+  <div class="section-row">Database</div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Database</div>
+    <div class="cell"><span class="svc">MySQL on VPS</span><br>Self-managed backups + security</div>
+    <div class="cell price">$0<br><span class="dim">(bundled)</span></div>
+    <div class="cell"><span class="svc">Postgres on Neon</span><br>Serverless, auto-backups, scales to zero<br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">Supabase, PlanetScale, Convex</div>
+    <div class="cell price">$19–39</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">ORM</div>
+    <div class="cell"><span class="svc">Eloquent (Laravel)</span></div>
+    <div class="cell price"><span class="dim">—</span></div>
+    <div class="cell"><span class="svc">Prisma</span><br>Type-safe queries in TypeScript<br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">Drizzle, Kysely</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Cache</div>
+    <div class="cell"><span class="svc">MySQL (db driver)</span></div>
+    <div class="cell price"><span class="dim">—</span></div>
+    <div class="cell"><span class="svc">Not needed at this scale</span><br><span class="tag tag-drop">drop</span></div>
+    <div class="cell alt">Upstash Redis if needed later</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <!-- Auth -->
+  <div class="section-row">Auth</div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Authentication</div>
+    <div class="cell"><span class="svc">Laravel Sanctum</span><br>Self-maintained code</div>
+    <div class="cell price">$0</div>
+    <div class="cell"><span class="svc">Better Auth</span><br>Open source, multi-tenant, lives in your database<br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">Clerk, NextAuth, Firebase Auth</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <!-- Services -->
+  <div class="section-row">Services</div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Payments</div>
+    <div class="cell"><span class="svc">Stripe via Laravel Cashier</span></div>
+    <div class="cell price"><span class="dim">% based</span></div>
+    <div class="cell"><span class="svc">Stripe</span><br>Checkout + Customer Portal + webhooks<br><span class="tag tag-keep">keep</span></div>
+    <div class="cell alt">LemonSqueezy, Paddle</div>
+    <div class="cell price"><span class="dim">% based</span></div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Email</div>
+    <div class="cell"><span class="svc">SendGrid</span></div>
+    <div class="cell price">$20</div>
+    <div class="cell"><span class="svc">Resend</span><br>Modern API, React email templates<br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">SendGrid (keep), Postmark, AWS SES</div>
+    <div class="cell price">$20</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Maps</div>
+    <div class="cell"><span class="svc">Google Maps / Places</span></div>
+    <div class="cell price">$0–20</div>
+    <div class="cell"><span class="svc">Google Maps / Places</span><br><span class="tag tag-keep">keep</span></div>
+    <div class="cell alt">Mapbox</div>
+    <div class="cell price">$0–20</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Charts</div>
+    <div class="cell"><span class="svc">ApexCharts</span></div>
+    <div class="cell price">$0</div>
+    <div class="cell"><span class="svc">Recharts</span><br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">ApexCharts, Chart.js, Tremor</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">File storage</div>
+    <div class="cell"><span class="svc">Local filesystem / AWS S3</span></div>
+    <div class="cell price">$0–10</div>
+    <div class="cell"><span class="svc">Cloudflare R2</span><br>No egress fees<br><span class="tag tag-switch">switch</span></div>
+    <div class="cell alt">AWS S3, Firebase Storage, Uploadthing</div>
+    <div class="cell price">$0–5</div>
+  </div>
+
+  <!-- Analytics -->
+  <div class="section-row">Analytics + insights <span class="tag tag-new">new — not in current app</span></div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Product analytics</div>
+    <div class="cell"><span class="svc">None</span><br>No usage data</div>
+    <div class="cell price"><span class="dim">—</span></div>
+    <div class="cell"><span class="svc">PostHog</span><br>Funnels, retention, feature flags. Free up to 1M events/mo<br><span class="tag tag-new">new</span></div>
+    <div class="cell alt">Mixpanel, Amplitude</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Session replay</div>
+    <div class="cell"><span class="svc">None</span><br>Can't see user behavior</div>
+    <div class="cell price"><span class="dim">—</span></div>
+    <div class="cell"><span class="svc">PostHog (included)</span><br>Watch real sessions, rage clicks, dead clicks. 5K free recordings/mo<br><span class="tag tag-new">new</span></div>
+    <div class="cell alt">FullStory ($199+/mo)</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Error tracking</div>
+    <div class="cell"><span class="svc">None</span><br>No crash alerts</div>
+    <div class="cell price"><span class="dim">—</span></div>
+    <div class="cell"><span class="svc">Sentry</span><br>Catch errors before users report them<br><span class="tag tag-new">new</span></div>
+    <div class="cell alt">LogRocket, Bugsnag</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <!-- Infrastructure -->
+  <div class="section-row">Infrastructure <span class="tag tag-drop">drop or replace</span></div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Encryption</div>
+    <div class="cell"><span class="svc">Custom AES system</span><br>(.env.local per environment)</div>
+    <div class="cell price">$0<br><span class="dim">fragile</span></div>
+    <div class="cell"><span class="svc">Vercel env variables</span><br>Built in, no custom code<br><span class="tag tag-drop">drop</span></div>
+    <div class="cell alt">Any host's env config</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">Admin panel</div>
+    <div class="cell"><span class="svc">TackSuperAdmin</span><br>Entire 2nd repo + deploy pipeline</div>
+    <div class="cell price">$0<br><span class="dim">maint. cost</span></div>
+    <div class="cell"><span class="svc">Protected admin route in app</span><br><span class="tag tag-drop">drop</span></div>
+    <div class="cell alt">Retool, Appsmith, Forestadmin</div>
+    <div class="cell price">$0</div>
+  </div>
+
+  <div class="grid-6">
+    <div class="cell lbl">CI/CD deploy</div>
+    <div class="cell"><span class="svc">GitHub Actions + self-hosted runner</span></div>
+    <div class="cell price">$0<br><span class="dim">runner upkeep</span></div>
+    <div class="cell"><span class="svc">Vercel auto-deploy</span><br>Push to branch = live<br><span class="tag tag-drop">drop</span></div>
+    <div class="cell alt">Netlify, Railway</div>
+    <div class="cell price">$0</div>
+  </div>
+
+</div>
+
+<!-- Cost summary -->
+<div class="footer-grid">
+  <div class="fcard">
+    <div class="fcard-label">Current stack — monthly total</div>
+    <div class="fcard-total">$270–650/mo</div>
+    <div><span class="fcard-tag" style="background:var(--red-bg);color:var(--red-text);">no analytics · no error tracking</span></div>
+    <div class="fcard-desc">Requires PHP/Laravel developer to maintain. Zero visibility into user behavior. Two repos, two deploy pipelines, custom encryption. If the dev shop leaves, ongoing maintenance becomes a significant challenge.</div>
+  </div>
+  <div class="fcard">
+    <div class="fcard-label">Rebuilt stack — monthly total</div>
+    <div class="fcard-total">$59–104/mo</div>
+    <div><span class="fcard-tag" style="background:var(--green-bg);color:var(--green-text);">~75% cheaper + full analytics</span></div>
+    <div class="fcard-desc">Fully managed infrastructure. Full analytics suite with session replay. Error tracking. One repo, one deploy, one language. One person can maintain everything.</div>
+  </div>
+</div>
+
+<div class="note-box">
+  <strong>Cost estimate for ~10,000 users:</strong> PostHog free tier covers 1M events/mo + 5K session recordings. Sentry free tier covers 5K errors/mo. Stripe fees are identical on either stack. All analytics tools install with a single script tag.
+</div>
+
+<!-- ==================== DIVIDER ==================== -->
+<div class="divider"></div>
+
+<!-- ==================== TIMELINE ==================== -->
+
+<h2 style="margin-top:0;">Project timeline</h2>
+
+<!-- Phase 1 -->
+<div class="phase-label">
+  <span>Phase 1 — Design + alignment</span>
+  <span class="phase-cost">$5,000</span>
+</div>
+
+<div class="ms">
+  <div class="dot dot-design"></div>
+  <div class="ms-header">
+    <span class="ms-date">Week 1 · Apr 14–20</span>
+    <span class="ms-pay">$5,000 — deposit to start</span>
+  </div>
+  <div class="ms-title">UI/UX design + app blueprint</div>
+  <div class="ms-body">Collaborative design week. Redesign the full app from scratch — every screen, every flow, every interaction. Wireframes and high-fidelity mockups for all key screens: onboarding, dashboard, timer, clients, frameworks, reports, settings. Align on look, feel, and functionality before a single line of code is written.</div>
+  <div class="ms-deliver">Deliverable: Finalized designs and feature spec, approved by you. This becomes the blueprint for everything that gets built.</div>
+</div>
+
+<!-- Phase 2 -->
+<div class="phase-gap"></div>
+<div class="phase-label">
+  <span>Phase 2 — Build sprint</span>
+  <span class="phase-cost">$10,000</span>
+</div>
+
+<div class="ms">
+  <div class="dot"></div>
+  <div class="ms-header">
+    <span class="ms-date">Week 2 · Apr 21–27</span>
+  </div>
+  <div class="ms-title">Foundation + auth + payments</div>
+  <div class="ms-body">Set up the full tech stack: Next.js, Neon Postgres, Prisma, Better Auth with multi-tenant organization support. Stripe subscriptions — checkout, customer portal, webhooks. PostHog analytics and Sentry error tracking installed from day one. App shell matching approved designs.</div>
+  <div class="ms-deliver">Deliverable: Sign up, pick a plan, pay, and land in the app.</div>
+</div>
+
+<div class="ms">
+  <div class="dot dot-pay"></div>
+  <div class="ms-header">
+    <span class="ms-date">Week 3 · Apr 28–May 4</span>
+    <span class="ms-pay">$5,000 — core functionality working</span>
+  </div>
+  <div class="ms-title">Frameworks + time tracking core</div>
+  <div class="ms-body">Hierarchical framework system (On the Business / In the Business). Framework editor with default templates per planner type. Real-time timer with start/stop/continue. Manual time entry. Search bar with prefix matching across all framework elements. Time adjustments and timezone support.</div>
+  <div class="ms-deliver">Deliverable: Full working demo — sign up, create frameworks, and track time end to end.</div>
+</div>
+
+<div class="ms">
+  <div class="dot"></div>
+  <div class="ms-header">
+    <span class="ms-date">Week 4 · May 5–11</span>
+  </div>
+  <div class="ms-title">Clients + dashboard</div>
+  <div class="ms-body">Client management — individual, partner, and company. Client-specific framework customization. Dashboard with timesheet view, hours graph, busiest month indicator, average monthly hours, and billable hours tracking.</div>
+  <div class="ms-deliver">Deliverable: Full client workflow and visual dashboard with real data.</div>
+</div>
+
+<div class="ms">
+  <div class="dot dot-pay"></div>
+  <div class="ms-header">
+    <span class="ms-date">Week 5 · May 12–18</span>
+    <span class="ms-pay">$5,000 — feature complete</span>
+  </div>
+  <div class="ms-title">Team, settings, reports, integrations</div>
+  <div class="ms-body">Team invites and multi-company switching. Account settings — timezone, company details, billing management. PDF/CSV export of time logs. Admin route for platform oversight. Resend email integration for invites, password resets, and notifications. Google Maps/Places integration.</div>
+  <div class="ms-deliver">Deliverable: Every feature working. App matches the approved designs from Phase 1.</div>
+</div>
+
+<!-- Phase 3 -->
+<div class="phase-gap"></div>
+<div class="phase-label">
+  <span>Phase 3 — User testing + polish</span>
+  <span class="phase-cost">$5,000</span>
+</div>
+
+<div class="ms">
+  <div class="dot"></div>
+  <div class="ms-header">
+    <span class="ms-date">Week 6 · May 19–25</span>
+  </div>
+  <div class="ms-title">Beta testing + data-driven fixes</div>
+  <div class="ms-body">Onboard 3–5 beta testers (wedding planners ideal). Review PostHog session replays to identify UX confusion and drop-off points. Fix errors surfaced by Sentry. UI polish, mobile responsiveness, and edge case handling. Iterate rapidly based on real user behavior.</div>
+  <div class="ms-deliver">Deliverable: Real users testing the app. Data-driven fixes shipping daily.</div>
+</div>
+
+<div class="ms">
+  <div class="dot dot-pay"></div>
+  <div class="ms-header">
+    <span class="ms-date">Week 7 · May 26–Jun 1</span>
+    <span class="ms-pay">$5,000 — beta approved</span>
+  </div>
+  <div class="ms-title">Final polish + launch prep</div>
+  <div class="ms-body">Incorporate all beta feedback. Final QA pass. Production deployment on Vercel. Domain and DNS configuration. End-to-end payment testing on production. Analytics dashboards prepped for launch day monitoring.</div>
+  <div class="ms-deliver">Deliverable: App approved for launch. Green light to go live.</div>
+</div>
+
+<!-- Phase 4 -->
+<div class="phase-gap"></div>
+<div class="phase-label">
+  <span>Phase 4 — Launch + post-launch support</span>
+  <span class="phase-cost">$5,000</span>
+</div>
+
+<div class="ms">
+  <div class="dot dot-launch"></div>
+  <div class="ms-header">
+    <span class="ms-date">Jun 2–5</span>
+    <span class="launch-tag">launch</span>
+    <span class="ms-pay">$5,000 — live at event</span>
+  </div>
+  <div class="ms-title">June 5th event launch</div>
+  <div class="ms-body">App live at tackco.com. Real signups at the event. Real-time monitoring of PostHog analytics and Sentry errors. Immediate hot fixes if anything breaks.</div>
+  <div class="ms-deliver">Deliverable: Live app, taking signups at the event.</div>
+</div>
+
+<div class="ms">
+  <div class="dot"></div>
+  <div class="ms-header">
+    <span class="ms-date">Jun 6–13</span>
+    <span class="inc-tag">included in Phase 4</span>
+  </div>
+  <div class="ms-title">Post-launch support</div>
+  <div class="ms-body">Daily analytics monitoring — signups, activation rates, drop-off points. Bug fixes within 24 hours. First round of user feedback triage and quick UX wins. Session replay review to catch onboarding friction. Weekly report covering signups, active users, top issues, and fixes shipped.</div>
+  <div class="ms-deliver">Deliverable: Weekly analytics report. Bug fixes and UX improvements shipping continuously. No additional charge.</div>
+</div>
+
+<!-- Summary cards -->
+<div class="summary-grid">
+  <div class="scard">
+    <div class="scard-label">Total project</div>
+    <div class="scard-val">$25,000</div>
+    <div class="scard-sub">5 payments of $5,000</div>
+  </div>
+  <div class="scard">
+    <div class="scard-label">Timeline</div>
+    <div class="scard-val">~8 weeks</div>
+    <div class="scard-sub">design through post-launch</div>
+  </div>
+  <div class="scard">
+    <div class="scard-label">Monthly run cost after</div>
+    <div class="scard-val">$59–104/mo</div>
+    <div class="scard-sub">fully managed, no dev shop needed</div>
+  </div>
+</div>
+
+<div class="note-box" style="margin-top:16px;">
+  <strong>What's included in $25,000:</strong> Full UI/UX redesign. Complete rebuild on modern serverless stack. Stripe payment integration. Analytics with session replay (PostHog). Error tracking (Sentry). Transactional email (Resend). Beta testing coordination. Event launch support. One week of post-launch monitoring, hot fixes, and user feedback iteration.
+  <br><br>
+  <strong>Payment structure:</strong> Every payment is tied to a deliverable you can see, test, and approve. No payment moves forward until the milestone is met.
+  <br><br>
+  <strong>After the project:</strong> The app runs on fully managed services for $59–104/mo with no ongoing developer dependency. If you'd like continued development beyond the included post-launch support, we can discuss a monthly retainer or per-feature pricing based on the roadmap we'll build together from real user data.
+</div>
+
+</div>
+
+<script>
+(function () {
+  const btn = document.getElementById('downloadPdf');
+  const target = document.getElementById('proposal');
+
+  btn.addEventListener('click', async () => {
+    if (!window.html2pdf) {
+      alert('PDF library is still loading. Try again in a moment.');
+      return;
+    }
+    const originalLabel = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = 'Preparing PDF…';
+
+    // Force light theme during capture for print fidelity, then restore.
+    const addedLight = !document.body.classList.contains('force-light');
+    if (addedLight) document.body.classList.add('force-light');
+
+    const opt = {
+      margin:       [12, 12, 16, 12], // mm
+      filename:     'tack-rebuild-proposal.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: 1100
+      },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.ms', '.fcard', '.scard', '.grid-6', '.phase-label', '.note-box'] }
+    };
+
+    try {
+      await html2pdf().set(opt).from(target).save();
+    } catch (err) {
+      console.error(err);
+      alert('Sorry, something went wrong generating the PDF.');
+    } finally {
+      if (addedLight) document.body.classList.remove('force-light');
+      btn.disabled = false;
+      btn.innerHTML = originalLabel;
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
