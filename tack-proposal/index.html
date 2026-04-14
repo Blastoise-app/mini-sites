@@ -952,7 +952,9 @@ h2 {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
-        windowWidth: 1100
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: target.scrollWidth
       },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.ms', '.fcard', '.scard', '.grid-6', '.phase-label', '.note-box'] }
