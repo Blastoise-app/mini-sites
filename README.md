@@ -9,7 +9,7 @@ Base: `https://blastoise-app.github.io/mini-sites/`
 | Site | Folder | URL |
 | --- | --- | --- |
 | Index | `/` | https://blastoise-app.github.io/mini-sites/ |
-| TAC | `tac/` | https://blastoise-app.github.io/mini-sites/tac/ |
+| Tack Proposal | `tack-proposal/` | https://blastoise-app.github.io/mini-sites/tack-proposal/ |
 
 ## Adding a new mini-site
 
